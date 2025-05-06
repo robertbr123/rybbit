@@ -1,0 +1,13 @@
+{
+  "name": "frogstats-shared",
+  "version": "1.0.0",
+  "description": "Shared code between client and server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@trpc/server": "^10.45.0",
+    "zod": "^3.24.3"
+  }
+}

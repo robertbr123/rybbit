@@ -59,6 +59,9 @@ import { handleWebhook } from "./api/stripe/webhook.js";
 import { IS_CLOUD } from "./lib/const.js";
 import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
 
+// Import tRPC
+import { registerTRPC } from "./trpc/index.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -124,6 +127,7 @@ const PUBLIC_ROUTES: string[] = [
   "/api/auth/callback/google",
   "/api/auth/callback/github",
   "/api/stripe/webhook", // Add webhook to public routes
+  "/trpc", // Add tRPC to public routes
 ];
 
 // Define analytics routes that can be public
@@ -267,6 +271,9 @@ const start = async () => {
 
     // Load site configurations cache
     await siteConfig.loadSiteConfigs();
+
+    // Register tRPC
+    await registerTRPC(server);
 
     // Start the server
     await server.listen({ port: 3001, host: "0.0.0.0" });

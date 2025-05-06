@@ -3,31 +3,22 @@
         "target": "ES2020",
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
-        "lib": [
-            "ES2020"
-        ],
-        "strict": true,
         "esModuleInterop": true,
+        "strict": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "outDir": "dist",
-        "rootDir": "..",
-        "resolveJsonModule": true,
-        "composite": true,
         "declaration": true,
         "declarationMap": true,
-        "sourceMap": true
+        "sourceMap": true,
+        "composite": true,
+        "rootDir": "."
     },
     "include": [
-        "src/**/*",
-        "../shared/**/*"
+        "**/*.ts"
     ],
     "exclude": [
-        "node_modules"
-    ],
-    "references": [
-        {
-            "path": "../shared"
-        }
+        "node_modules",
+        "dist"
     ]
 }

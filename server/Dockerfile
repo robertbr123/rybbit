@@ -6,10 +6,13 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
+COPY ../shared/package.json ./shared/package.json
 RUN npm ci
+RUN cd shared && npm ci
 
 # Copy source code
 COPY . .
+COPY ../shared ./shared
 
 # Build the application
 RUN npm run build
@@ -31,6 +34,8 @@ COPY --from=builder /app/docker-entrypoint.sh /docker-entrypoint.sh
 COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/src ./src
+COPY --from=builder /app/shared ./shared
+COPY --from=builder /app/shared/node_modules ./shared/node_modules
 
 # Make the entrypoint executable
 RUN chmod +x /docker-entrypoint.sh
