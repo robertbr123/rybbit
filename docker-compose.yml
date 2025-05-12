@@ -14,7 +14,7 @@ services:
     environment:
       # Pass domain name for use in Caddyfile
       # Email is configured via Caddyfile global options
-      - DOMAIN_NAME=${DOMAIN_NAME}
+      - DOMAIN_NAME=https://analytics.ondeline.cloud
     depends_on:
       - backend
       - client
