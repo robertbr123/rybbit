@@ -57,6 +57,7 @@ export interface GetSessionRequest {
   Querystring: {
     limit?: string;
     offset?: string;
+    minutes?: string;
   };
 }
 
@@ -67,11 +68,17 @@ export async function getSession(
   const { sessionId, site } = req.params;
   const limit = req.query.limit ? parseInt(req.query.limit) : 100;
   const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+  const minutes = req.query.minutes ? parseInt(req.query.minutes) : undefined;
 
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
   if (!userHasAccessToSite) {
     return res.status(403).send({ error: "Forbidden" });
   }
+
+  // Add time filter if minutes is provided
+  const timeFilter = minutes
+    ? `AND timestamp > now() - interval ${minutes} minute`
+    : "";
 
   try {
     // 1. First query: Get session data derived from events
@@ -101,6 +108,7 @@ FROM events
 WHERE 
     site_id = {siteId:Int32}
     AND session_id = {sessionId:String}
+    AND ${timeFilter}
 GROUP BY session_id
 LIMIT 1
     `;
@@ -113,6 +121,7 @@ FROM events
 WHERE
     site_id = {siteId:Int32}
     AND session_id = {sessionId:String}
+    AND ${timeFilter}
     `;
 
     // 3. Query to get paginated pageviews
@@ -131,6 +140,7 @@ FROM events
 WHERE
     site_id = {siteId:Int32}
     AND session_id = {sessionId:String}
+    AND ${timeFilter}
 ORDER BY timestamp ASC
 LIMIT {limit:Int32}
 OFFSET {offset:Int32}
