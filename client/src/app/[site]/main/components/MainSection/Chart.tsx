@@ -2,7 +2,7 @@
 import { nivoTheme } from "@/lib/nivo";
 import { StatType, TimeBucket, useStore } from "@/lib/store";
 import { ResponsiveLine, CustomLayer, CustomLayerProps } from "@nivo/line";
-import type { ScaleLinear } from '@nivo/scales'
+import type { ScaleLinear } from "@nivo/scales";
 import { DateTime } from "luxon";
 import { formatSecondsAsMinutesAndSeconds } from "../../../../../lib/utils";
 import { APIResponse } from "../../../../../api/types";
@@ -10,16 +10,18 @@ import { GetOverviewBucketedResponse } from "../../../../../api/analytics/useGet
 import { Time } from "../../../../../components/DateSelector/types";
 import { useWindowSize } from "@uidotdev/usehooks";
 
-type DashedLineProps = Omit<CustomLayerProps, 'xScale' | 'yScale'> & {
-  xScale: ScaleLinear<number>
-  yScale: ScaleLinear<number>
-}
+type DashedLineProps = Omit<CustomLayerProps, "xScale" | "yScale"> & {
+  xScale: ScaleLinear<number>;
+  yScale: ScaleLinear<number>;
+};
 
 export const formatter = Intl.NumberFormat("en", { notation: "compact" });
 
 const getMax = (time: Time, bucket: TimeBucket) => {
   const now = DateTime.now();
-  if (time.mode === "day") {
+  if (time.mode === "past-24-hours") {
+    return now.toJSDate();
+  } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day)
       .endOf("day")
       .minus({
@@ -62,7 +64,9 @@ const getMax = (time: Time, bucket: TimeBucket) => {
 };
 
 const getMin = (time: Time, bucket: TimeBucket) => {
-  if (time.mode === "day") {
+  if (time.mode === "past-24-hours") {
+    return DateTime.now().minus({ hours: 24 }).toJSDate();
+  } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day).startOf("day");
     return dayDate.toJSDate();
   } else if (time.mode === "week") {
@@ -115,37 +119,40 @@ export function Chart({
     0
   );
 
-  const formattedData = data?.data
-    ?.map((e, i) => {
-      // filter out dates from the future
-      if (DateTime.fromSQL(e.time).toUTC() > DateTime.now()) {
-        return null;
-      }
+  const formattedData =
+    data?.data
+      ?.map((e, i) => {
+        // filter out dates from the future
+        if (DateTime.fromSQL(e.time).toUTC() > DateTime.now()) {
+          return null;
+        }
 
-      return {
-        x: DateTime.fromSQL(e.time).toUTC().toFormat("yyyy-MM-dd HH:mm:ss"),
-        y: e[selectedStat],
-        previousY:
-          i >= lengthDiff && previousData?.data?.[i - lengthDiff][selectedStat],
-        currentTime: DateTime.fromSQL(e.time),
-        previousTime:
-          i >= lengthDiff
-            ? DateTime.fromSQL(previousData?.data?.[i - lengthDiff]?.time ?? "")
-            : undefined,
-      };
-    })
-    .filter((e) => e !== null) || [];
+        return {
+          x: DateTime.fromSQL(e.time).toUTC().toFormat("yyyy-MM-dd HH:mm:ss"),
+          y: e[selectedStat],
+          previousY:
+            i >= lengthDiff &&
+            previousData?.data?.[i - lengthDiff][selectedStat],
+          currentTime: DateTime.fromSQL(e.time),
+          previousTime:
+            i >= lengthDiff
+              ? DateTime.fromSQL(
+                  previousData?.data?.[i - lengthDiff]?.time ?? ""
+                )
+              : undefined,
+        };
+      })
+      .filter((e) => e !== null) || [];
 
   const currentDayStr = DateTime.now().toISODate();
-  const currentMonthStr = DateTime.now().toFormat('yyyy-MM-01');
-  const shouldNotDisplay = (
-    time.mode === 'all-time' || // do not display in all-time mode
-    time.mode === 'year' || // do not display in year mode
-    (time.mode === 'month' && time.month !== currentMonthStr) || // do not display in month mode if month is not current
-    (time.mode === 'day' && time.day !== currentDayStr) || // do not display in day mode if day is not current
-    (time.mode === 'range' && time.endDate !== currentDayStr) || // do not display in range mode if end date is not current day
-    (time.mode === 'day' && (bucket === 'minute' || bucket === 'five_minutes')) // do not display in day mode if bucket is minute or five_minutes
-  );
+  const currentMonthStr = DateTime.now().toFormat("yyyy-MM-01");
+  const shouldNotDisplay =
+    time.mode === "all-time" || // do not display in all-time mode
+    time.mode === "year" || // do not display in year mode
+    (time.mode === "month" && time.month !== currentMonthStr) || // do not display in month mode if month is not current
+    (time.mode === "day" && time.day !== currentDayStr) || // do not display in day mode if day is not current
+    (time.mode === "range" && time.endDate !== currentDayStr) || // do not display in range mode if end date is not current day
+    (time.mode === "day" && (bucket === "minute" || bucket === "five_minutes")); // do not display in day mode if bucket is minute or five_minutes
   const displayDashed = formattedData.length >= 2 && !shouldNotDisplay;
 
   const baseGradient = {
@@ -156,24 +163,30 @@ export function Chart({
   const croppedData = formattedData.slice(0, -1);
 
   // add original data and styles to chart
-  const chartPropsData = [{
-    id: "croppedData",
-    data: displayDashed ? croppedData : formattedData,
-  }];
-  const chartPropsDefs = [{
-    id: "croppedData",
-    type: "linearGradient",
-    colors: [
-      { ...baseGradient, opacity: 1 },
-      { offset: 100, color: baseGradient.color, opacity: 0 },
-    ],
-  }];
-  const chartPropsFill = [{
-    id: "croppedData",
-    match: {
-      id: "croppedData"
+  const chartPropsData = [
+    {
+      id: "croppedData",
+      data: displayDashed ? croppedData : formattedData,
     },
-  }];
+  ];
+  const chartPropsDefs = [
+    {
+      id: "croppedData",
+      type: "linearGradient",
+      colors: [
+        { ...baseGradient, opacity: 1 },
+        { offset: 100, color: baseGradient.color, opacity: 0 },
+      ],
+    },
+  ];
+  const chartPropsFill = [
+    {
+      id: "croppedData",
+      match: {
+        id: "croppedData",
+      },
+    },
+  ];
 
   // add dashed data and styles to chart
   if (displayDashed) {
@@ -192,7 +205,7 @@ export function Chart({
     chartPropsFill.push({
       id: "dashedData",
       match: {
-        id: "dashedData"
+        id: "dashedData",
       },
     });
   }
@@ -208,7 +221,7 @@ export function Chart({
         key={id.toString()}
         d={
           lineGenerator(
-            data.map(d => ({
+            data.map((d) => ({
               x: xScale(d.data.x as number),
               y: yScale(d.data.y as number),
             }))
@@ -223,7 +236,7 @@ export function Chart({
         }
       />
     ));
-  }
+  };
 
   return (
     <ResponsiveLine
@@ -261,7 +274,9 @@ export function Chart({
           time.mode === "day" ? 24 : Math.min(12, data?.data?.length ?? 0)
         ),
         format: (value) => {
-          if (time.mode === "day") {
+          if (time.mode === "past-24-hours") {
+            return DateTime.fromJSDate(value).toFormat("ha");
+          } else if (time.mode === "day") {
             return DateTime.fromJSDate(value).toFormat("ha");
           } else if (time.mode === "range") {
             return DateTime.fromJSDate(value).toFormat("MMM d");
@@ -340,7 +355,7 @@ export function Chart({
         "axes",
         "areas",
         "crosshair",
-        (displayDashed ? DashedLine : "lines"),
+        displayDashed ? DashedLine : "lines",
         "slices",
         "points",
         "mesh",

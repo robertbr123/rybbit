@@ -4,7 +4,10 @@ import { Tilt_Warp } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { useGetOverview } from "../../../../../api/analytics/useGetOverview";
-import { useGetOverviewBucketed } from "../../../../../api/analytics/useGetOverviewBucketed";
+import {
+  useGetOverviewBucketed,
+  useGetOverviewBucketedPastMinutes,
+} from "../../../../../api/analytics/useGetOverviewBucketed";
 import { authClient } from "../../../../../lib/auth";
 import { useStore } from "../../../../../lib/store";
 import { cn } from "../../../../../lib/utils";
@@ -32,12 +35,62 @@ export function MainSection() {
 
   const { selectedStat, time, site, bucket } = useStore();
 
-  const { data, isFetching, error } = useGetOverviewBucketed({ site, bucket });
+  // Use the past minutes API when in past-24-hours mode
+  const isPast24HoursMode = time.mode === "past-24-hours";
+
+  // Regular date-based queries
   const {
-    data: previousData,
-    isFetching: isPreviousFetching,
-    error: previousError,
-  } = useGetOverviewBucketed({ periodTime: "previous", site, bucket });
+    data: regularData,
+    isFetching: isRegularFetching,
+    error: regularError,
+  } = useGetOverviewBucketed({
+    site,
+    bucket,
+  });
+
+  const {
+    data: regularPreviousData,
+    isFetching: isRegularPreviousFetching,
+    error: regularPreviousError,
+  } = useGetOverviewBucketed({
+    periodTime: "previous",
+    site,
+    bucket,
+  });
+
+  // Past minutes-based queries (for 24 hour mode)
+  const {
+    data: pastMinutesData,
+    isFetching: isPastMinutesFetching,
+    error: pastMinutesError,
+  } = useGetOverviewBucketedPastMinutes({
+    pastMinutes: 24 * 60,
+    site,
+    bucket,
+  });
+
+  const {
+    data: pastMinutesPreviousData,
+    isFetching: isPastMinutesPreviousFetching,
+    error: pastMinutesPreviousError,
+  } = useGetOverviewBucketedPastMinutes({
+    pastMinutes: 48 * 60, // Previous 24 hours
+    site,
+    bucket,
+  });
+
+  // Combine the data based on the mode
+  const data = isPast24HoursMode ? pastMinutesData : regularData;
+  const previousData = isPast24HoursMode
+    ? pastMinutesPreviousData
+    : regularPreviousData;
+  const isFetching = isPast24HoursMode
+    ? isPastMinutesFetching
+    : isRegularFetching;
+  const isPreviousFetching = isPast24HoursMode
+    ? isPastMinutesPreviousFetching
+    : isRegularPreviousFetching;
+
   const { isFetching: isOverviewFetching } = useGetOverview({ site });
   const { isFetching: isOverviewFetchingPrevious } = useGetOverview({
     site,
@@ -64,7 +117,10 @@ export function MainSection() {
             <div className="flex items-center space-x-4">
               <Link
                 href={session.data ? "/" : "https://rybbit.io"}
-                className={cn("text-lg font-semibold flex items-center gap-1.5 opacity-75", tilt_wrap.className)}
+                className={cn(
+                  "text-lg font-semibold flex items-center gap-1.5 opacity-75",
+                  tilt_wrap.className
+                )}
               >
                 <Image src="/rybbit.png" alt="Rybbit" width={20} height={20} />
                 rybbit.io

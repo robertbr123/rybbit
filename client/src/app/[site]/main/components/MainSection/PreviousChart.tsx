@@ -9,7 +9,9 @@ import { GetOverviewBucketedResponse } from "../../../../../api/analytics/useGet
 import { Time } from "../../../../../components/DateSelector/types";
 
 const getMin = (time: Time) => {
-  if (time.mode === "day") {
+  if (time.mode === "past-24-hours") {
+    return DateTime.now().minus({ hours: 48 }).toJSDate();
+  } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day).startOf("day");
     return dayDate.toJSDate();
   } else if (time.mode === "week") {
@@ -43,7 +45,11 @@ export function PreviousChart({
     y: e[selectedStat],
   }));
 
-  const min = useMemo(() => getMin(time), [data]);
+  const min = useMemo(() => getMin(time), [time]);
+  const max24Hours =
+    time.mode === "past-24-hours"
+      ? DateTime.now().minus({ hours: 24 }).toJSDate()
+      : undefined;
 
   return (
     <ResponsiveLine
@@ -61,6 +67,7 @@ export function PreviousChart({
         precision: "second",
         useUTC: true,
         min,
+        max: max24Hours,
       }}
       yScale={{
         type: "linear",

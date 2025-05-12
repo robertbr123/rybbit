@@ -24,6 +24,10 @@ const getLabel = (time: Time) => {
     return `${startFormatted} - ${endFormatted}`;
   }
 
+  if (time.mode === "past-24-hours") {
+    return "Past 24 Hours";
+  }
+
   if (time.mode === "day") {
     if (time.day === DateTime.now().toISODate()) {
       return "Today";
@@ -98,6 +102,15 @@ export function DateSelector({
           }
         >
           Today
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() =>
+            setTime({
+              mode: "past-24-hours",
+            })
+          }
+        >
+          Past 24 Hours
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() =>
