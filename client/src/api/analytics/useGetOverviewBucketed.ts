@@ -81,6 +81,8 @@ export function useGetOverviewBucketedPastMinutes({
   refetchInterval?: number;
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
+  const { filters } = useStore();
+
   // Determine if we're using a specific range or just pastMinutes
   const useRange =
     pastMinutesStart !== undefined && pastMinutesEnd !== undefined;
@@ -93,8 +95,9 @@ export function useGetOverviewBucketedPastMinutes({
           pastMinutesEnd,
           site,
           bucket,
+          filters,
         ]
-      : ["overview-bucketed-past-minutes", pastMinutes, site, bucket],
+      : ["overview-bucketed-past-minutes", pastMinutes, site, bucket, filters],
     queryFn: () => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       return authedFetch(
@@ -105,11 +108,13 @@ export function useGetOverviewBucketedPastMinutes({
               bucket,
               pastMinutesStart,
               pastMinutesEnd,
+              filters,
             }
           : {
               timezone,
               bucket,
               pastMinutes,
+              filters,
             }
       ).then((res) => res.json());
     },
@@ -145,6 +150,8 @@ export function useGetOverviewBucketedPreviousPastMinutes({
   refetchInterval?: number;
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
+  const { filters } = useStore();
+
   // For the previous period, we use the pastMinutesStart/End approach
   // If pastMinutes is 24 * 60 (24 hours), then we fetch 24-48 hour data
   const pastMinutesStart = pastMinutes * 2; // e.g., 48 hours ago
@@ -157,6 +164,7 @@ export function useGetOverviewBucketedPreviousPastMinutes({
       pastMinutesEnd,
       site,
       bucket,
+      filters,
     ],
     queryFn: () => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -165,6 +173,7 @@ export function useGetOverviewBucketedPreviousPastMinutes({
         bucket,
         pastMinutesStart,
         pastMinutesEnd,
+        filters,
       }).then((res) => res.json());
     },
     refetchInterval,
