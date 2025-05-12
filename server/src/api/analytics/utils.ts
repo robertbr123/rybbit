@@ -10,6 +10,7 @@ import SqlString from "sqlstring";
 export function getTimeStatement({
   date,
   pastMinutes,
+  pastMinutesRange,
 }: {
   date?: {
     startDate?: string;
@@ -18,9 +19,14 @@ export function getTimeStatement({
     table?: "events" | "sessions";
   };
   pastMinutes?: number;
+  pastMinutesRange?: { start: number; end: number };
 }) {
   // Sanitize inputs with Zod
-  const sanitized = validateTimeStatementParams({ date, pastMinutes });
+  const sanitized = validateTimeStatementParams({
+    date,
+    pastMinutes,
+    pastMinutesRange,
+  });
 
   if (sanitized.date) {
     const { startDate, endDate, timezone, table } = sanitized.date;
@@ -50,6 +56,18 @@ export function getTimeStatement({
         )
       )`;
   }
+
+  // Handle specific range of past minutes
+  if (sanitized.pastMinutesRange) {
+    const { start, end } = sanitized.pastMinutesRange;
+    return `AND timestamp > now() - interval ${SqlString.escape(
+      start
+    )} minute AND timestamp <= now() - interval ${SqlString.escape(
+      end
+    )} minute`;
+  }
+
+  // Handle standard past minutes
   if (sanitized.pastMinutes) {
     // Use SqlString.escape for pastMinutes (it handles numbers)
     return `AND timestamp > now() - interval ${SqlString.escape(

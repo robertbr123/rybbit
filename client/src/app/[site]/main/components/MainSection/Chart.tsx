@@ -20,7 +20,7 @@ export const formatter = Intl.NumberFormat("en", { notation: "compact" });
 const getMax = (time: Time, bucket: TimeBucket) => {
   const now = DateTime.now();
   if (time.mode === "past-24-hours") {
-    return now.toJSDate();
+    return DateTime.now().setZone("UTC").toJSDate();
   } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day)
       .endOf("day")
@@ -65,7 +65,7 @@ const getMax = (time: Time, bucket: TimeBucket) => {
 
 const getMin = (time: Time, bucket: TimeBucket) => {
   if (time.mode === "past-24-hours") {
-    return DateTime.now().minus({ hours: 24 }).toJSDate();
+    return DateTime.now().setZone("UTC").minus({ hours: 24 }).toJSDate();
   } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day).startOf("day");
     return dayDate.toJSDate();
@@ -122,23 +122,26 @@ export function Chart({
   const formattedData =
     data?.data
       ?.map((e, i) => {
+        // Parse timestamp properly
+        const timestamp = DateTime.fromSQL(e.time).toUTC();
+
         // filter out dates from the future
-        if (DateTime.fromSQL(e.time).toUTC() > DateTime.now()) {
+        if (timestamp > DateTime.now()) {
           return null;
         }
 
         return {
-          x: DateTime.fromSQL(e.time).toUTC().toFormat("yyyy-MM-dd HH:mm:ss"),
+          x: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
           y: e[selectedStat],
           previousY:
             i >= lengthDiff &&
             previousData?.data?.[i - lengthDiff][selectedStat],
-          currentTime: DateTime.fromSQL(e.time),
+          currentTime: timestamp,
           previousTime:
             i >= lengthDiff
               ? DateTime.fromSQL(
                   previousData?.data?.[i - lengthDiff]?.time ?? ""
-                )
+                ).toUTC()
               : undefined,
         };
       })
@@ -271,24 +274,28 @@ export function Chart({
         truncateTickAt: 0,
         tickValues: Math.min(
           maxTicks,
-          time.mode === "day" ? 24 : Math.min(12, data?.data?.length ?? 0)
+          time.mode === "day" || time.mode === "past-24-hours"
+            ? 24
+            : Math.min(12, data?.data?.length ?? 0)
         ),
         format: (value) => {
-          if (time.mode === "past-24-hours") {
-            return DateTime.fromJSDate(value).toFormat("ha");
-          } else if (time.mode === "day") {
-            return DateTime.fromJSDate(value).toFormat("ha");
+          // Convert UTC date to local timezone for display
+          const localTime = DateTime.fromJSDate(value).toLocal();
+
+          if (time.mode === "past-24-hours" || time.mode === "day") {
+            return localTime.toFormat("ha");
           } else if (time.mode === "range") {
-            return DateTime.fromJSDate(value).toFormat("MMM d");
+            return localTime.toFormat("MMM d");
           } else if (time.mode === "week") {
-            return DateTime.fromJSDate(value).toFormat("MMM d");
+            return localTime.toFormat("MMM d");
           } else if (time.mode === "month") {
-            return DateTime.fromJSDate(value).toFormat("MMM d");
+            return localTime.toFormat("MMM d");
           } else if (time.mode === "year") {
-            return DateTime.fromJSDate(value).toFormat("MMM d");
+            return localTime.toFormat("MMM d");
           } else if (time.mode === "all-time") {
-            return DateTime.fromJSDate(value).toFormat("MMM d");
+            return localTime.toFormat("MMM d");
           }
+          return "";
         },
       }}
       axisLeft={{
@@ -356,6 +363,7 @@ export function Chart({
         "areas",
         "crosshair",
         displayDashed ? DashedLine : "lines",
+        // "lines",
         "slices",
         "points",
         "mesh",
@@ -366,16 +374,19 @@ export function Chart({
 }
 
 const formatTime = (time: DateTime<boolean>, bucket: TimeBucket) => {
+  // Ensure time is in local timezone
+  const localTime = time.toLocal();
+
   if (
     bucket === "minute" ||
     bucket === "five_minutes" ||
     bucket === "ten_minutes" ||
     bucket === "fifteen_minutes"
   ) {
-    return time.toFormat("M/d h:mm a");
+    return localTime.toFormat("M/d h:mm a");
   } else if (bucket === "hour") {
-    return time.toFormat("M/d h a");
+    return localTime.toFormat("M/d h a");
   } else {
-    return time.toLocaleString();
+    return localTime.toLocaleString();
   }
 };

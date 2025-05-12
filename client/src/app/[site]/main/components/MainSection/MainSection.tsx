@@ -7,6 +7,7 @@ import { useGetOverview } from "../../../../../api/analytics/useGetOverview";
 import {
   useGetOverviewBucketed,
   useGetOverviewBucketedPastMinutes,
+  useGetOverviewBucketedPreviousPastMinutes,
 } from "../../../../../api/analytics/useGetOverviewBucketed";
 import { authClient } from "../../../../../lib/auth";
 import { useStore } from "../../../../../lib/store";
@@ -60,7 +61,7 @@ export function MainSection() {
     site,
     bucket,
     props: {
-      enabled: isPast24HoursMode,
+      enabled: !isPast24HoursMode,
     },
   });
 
@@ -82,8 +83,8 @@ export function MainSection() {
     data: pastMinutesPreviousData,
     isFetching: isPastMinutesPreviousFetching,
     error: pastMinutesPreviousError,
-  } = useGetOverviewBucketedPastMinutes({
-    pastMinutes: 48 * 60, // Previous 24 hours
+  } = useGetOverviewBucketedPreviousPastMinutes({
+    pastMinutes: 24 * 60,
     site,
     bucket,
     props: {
@@ -110,8 +111,8 @@ export function MainSection() {
   });
 
   const maxOfDataAndPreviousData = Math.max(
-    Math.max(...(data?.data?.map((d) => d[selectedStat]) ?? [])),
-    Math.max(...(previousData?.data?.map((d) => d[selectedStat]) ?? []))
+    Math.max(...(data?.data?.map((d: any) => d[selectedStat]) ?? [])),
+    Math.max(...(previousData?.data?.map((d: any) => d[selectedStat]) ?? []))
   );
 
   return (
