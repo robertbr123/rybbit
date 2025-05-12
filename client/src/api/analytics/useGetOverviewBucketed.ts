@@ -1,8 +1,12 @@
-import { UseQueryResult, useQuery } from "@tanstack/react-query";
+import {
+  UseQueryOptions,
+  UseQueryResult,
+  useQuery,
+} from "@tanstack/react-query";
 import { BACKEND_URL } from "../../lib/const";
-import { APIResponse } from "../types";
-import { getStartAndEndDate, authedFetch } from "../utils";
 import { TimeBucket, useStore } from "../../lib/store";
+import { APIResponse } from "../types";
+import { authedFetch, getStartAndEndDate } from "../utils";
 
 type PeriodTime = "current" | "previous";
 
@@ -20,10 +24,12 @@ export function useGetOverviewBucketed({
   periodTime,
   site,
   bucket = "hour",
+  props,
 }: {
   periodTime?: PeriodTime;
   site?: number | string;
   bucket?: TimeBucket;
+  props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
   const { time, previousTime, filters } = useStore();
 
@@ -54,6 +60,7 @@ export function useGetOverviewBucketed({
       return undefined;
     },
     staleTime: Infinity,
+    ...props,
   });
 }
 
@@ -62,11 +69,13 @@ export function useGetOverviewBucketedPastMinutes({
   site,
   bucket = "hour",
   refetchInterval,
+  props,
 }: {
   pastMinutes: number;
   site?: number | string;
   bucket?: TimeBucket;
   refetchInterval?: number;
+  props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
   return useQuery({
     queryKey: ["overview-bucketed-past-minutes", pastMinutes, site, bucket],
@@ -90,5 +99,6 @@ export function useGetOverviewBucketedPastMinutes({
       return undefined;
     },
     staleTime: Infinity,
+    ...props,
   });
 }

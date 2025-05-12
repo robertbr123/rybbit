@@ -46,6 +46,9 @@ export function MainSection() {
   } = useGetOverviewBucketed({
     site,
     bucket,
+    props: {
+      enabled: !isPast24HoursMode,
+    },
   });
 
   const {
@@ -56,6 +59,9 @@ export function MainSection() {
     periodTime: "previous",
     site,
     bucket,
+    props: {
+      enabled: isPast24HoursMode,
+    },
   });
 
   // Past minutes-based queries (for 24 hour mode)
@@ -67,6 +73,9 @@ export function MainSection() {
     pastMinutes: 24 * 60,
     site,
     bucket,
+    props: {
+      enabled: isPast24HoursMode,
+    },
   });
 
   const {
@@ -77,6 +86,9 @@ export function MainSection() {
     pastMinutes: 48 * 60, // Previous 24 hours
     site,
     bucket,
+    props: {
+      enabled: isPast24HoursMode,
+    },
   });
 
   // Combine the data based on the mode

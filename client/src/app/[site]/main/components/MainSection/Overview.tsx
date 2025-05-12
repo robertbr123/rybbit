@@ -83,13 +83,22 @@ const Stat = ({
   const isPast24HoursMode = time.mode === "past-24-hours";
 
   // Regular bucketed data for sparklines
-  const { data: regularData } = useGetOverviewBucketed({ site, bucket });
+  const { data: regularData } = useGetOverviewBucketed({
+    site,
+    bucket,
+    props: {
+      enabled: !isPast24HoursMode,
+    },
+  });
 
   // Past minutes data for sparklines
   const { data: pastMinutesData } = useGetOverviewBucketedPastMinutes({
     pastMinutes: 24 * 60,
     site,
     bucket,
+    props: {
+      enabled: isPast24HoursMode,
+    },
   });
 
   // Use the appropriate data source based on mode
