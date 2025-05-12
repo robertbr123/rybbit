@@ -79,9 +79,11 @@ const getLabel = (time: Time) => {
 export function DateSelector({
   time,
   setTime,
+  past24HoursEnabled = true,
 }: {
   time: Time;
   setTime: (time: Time) => void;
+  past24HoursEnabled?: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -103,15 +105,17 @@ export function DateSelector({
         >
           Today
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() =>
-            setTime({
-              mode: "past-24-hours",
-            })
-          }
-        >
-          Past 24 Hours
-        </DropdownMenuItem>
+        {past24HoursEnabled && (
+          <DropdownMenuItem
+            onClick={() =>
+              setTime({
+                mode: "past-24-hours",
+              })
+            }
+          >
+            Past 24 Hours
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onClick={() =>
             setTime({
