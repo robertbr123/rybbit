@@ -1,24 +1,5 @@
 services:
-  caddy:
-    image: caddy:2.10.0
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - "70:70"
-      - "8443:8443"
-      - "443:443/udp" # Needed for HTTP/3
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile # Mount Caddy config file
-      - caddy_data:/data # Mount persistent data volume for certs etc.
-      - caddy_config:/config # Mount persistent config volume
-    environment:
-      # Pass domain name for use in Caddyfile
-      # Email is configured via Caddyfile global options
-      - DOMAIN_NAME=${DOMAIN_NAME}
-    depends_on:
-      - backend
-      - client
-
+  
   clickhouse:
     container_name: clickhouse
     image: clickhouse/clickhouse-server:25.4.2
