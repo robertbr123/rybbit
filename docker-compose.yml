@@ -1,6 +1,5 @@
 services:
   caddy:
-    image: caddy:2.10.0
     container_name: caddy
     restart: unless-stopped
     ports:
@@ -21,7 +20,6 @@ services:
 
   clickhouse:
     container_name: clickhouse
-    image: clickhouse/clickhouse-server:25.4.2
     ports:
       - "8123:8123"
       - "9000:9000"
@@ -29,9 +27,9 @@ services:
       - clickhouse-data:/var/lib/clickhouse
       - ./clickhouse_config:/etc/clickhouse-server/config.d
     environment:
-      - CLICKHOUSE_DB=${CLICKHOUSE_DB:-analytics}
-      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
-      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-frog}
+      - CLICKHOUSE_DB=analytics
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=frog
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
       interval: 3s
