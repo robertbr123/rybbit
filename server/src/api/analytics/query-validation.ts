@@ -92,7 +92,7 @@ const fillDateParamsSchema = z.object({
  */
 const timeStatementParamsSchema = z
   .object({
-    date: dateParamsSchema.optional(),
+    date: fillDateParamsSchema.optional(),
     pastMinutes: z.number().nonnegative().optional(),
     pastMinutesRange: z
       .object({
@@ -112,7 +112,13 @@ const timeStatementParamsSchema = z
     {
       message: "Either date, pastMinutes, or pastMinutesRange must be provided",
     }
-  );
+  )
+  // Set default empty objects if schema validation fails
+  .catch({
+    date: undefined,
+    pastMinutes: undefined,
+    pastMinutesRange: undefined,
+  });
 
 /**
  * Schema for parameters to getTimeStatementFill() function
