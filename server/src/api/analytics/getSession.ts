@@ -77,8 +77,11 @@ export async function getSession(
 
   // Add time filter if minutes is provided
   const timeFilter = minutes
-    ? `AND timestamp > now() - interval ${minutes} minute`
+    ? `timestamp > now() - interval ${minutes} minute`
     : "";
+
+  // Add the WHERE clause connector if timeFilter exists
+  const timeFilterWithConnector = timeFilter ? `AND ${timeFilter}` : "";
 
   try {
     // 1. First query: Get session data derived from events
@@ -108,7 +111,7 @@ FROM events
 WHERE 
     site_id = {siteId:Int32}
     AND session_id = {sessionId:String}
-    AND ${timeFilter}
+    ${timeFilterWithConnector}
 GROUP BY session_id
 LIMIT 1
     `;
@@ -121,7 +124,7 @@ FROM events
 WHERE
     site_id = {siteId:Int32}
     AND session_id = {sessionId:String}
-    AND ${timeFilter}
+    ${timeFilterWithConnector}
     `;
 
     // 3. Query to get paginated pageviews
@@ -140,7 +143,7 @@ FROM events
 WHERE
     site_id = {siteId:Int32}
     AND session_id = {sessionId:String}
-    AND ${timeFilter}
+    ${timeFilterWithConnector}
 ORDER BY timestamp ASC
 LIMIT {limit:Int32}
 OFFSET {offset:Int32}
