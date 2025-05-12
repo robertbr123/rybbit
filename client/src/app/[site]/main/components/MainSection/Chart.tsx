@@ -65,7 +65,7 @@ const getMax = (time: Time, bucket: TimeBucket) => {
 
 const getMin = (time: Time, bucket: TimeBucket) => {
   if (time.mode === "past-24-hours") {
-    return DateTime.now().setZone("UTC").minus({ hours: 24 }).toJSDate();
+    return DateTime.now().setZone("UTC").minus({ hours: 25 }).toJSDate();
   } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day).startOf("day");
     return dayDate.toJSDate();
