@@ -1,4 +1,5 @@
 import { ResponsiveCalendar } from "@nivo/calendar";
+import { Theme } from "@nivo/theming";
 import _ from "lodash";
 import { DateTime } from "luxon";
 import { UserSessionCountResponse } from "../../../../../api/analytics/userSessions";
@@ -37,7 +38,7 @@ export const VisitCalendar = ({
       <div style={{ minWidth: "600px", height: "100%" }}>
         <ResponsiveCalendar
           data={data}
-          theme={nivoTheme}
+          theme={nivoTheme as Theme}
           from={data.at(-1)?.day ?? ""}
           to={data[0]?.day}
           emptyColor={"hsl(var(--neutral-750))"}
