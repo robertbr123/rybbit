@@ -49,7 +49,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-frog}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-frog}
       - BASE_URL=${BASE_URL}
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_SECRET=insecure-secret
       - DISABLE_SIGNUP=${DISABLE_SIGNUP}
     depends_on:
       clickhouse:
