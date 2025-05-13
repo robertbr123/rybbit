@@ -14,7 +14,7 @@ services:
     environment:
       # Pass domain name for use in Caddyfile
       # Email is configured via Caddyfile global options
-      - DOMAIN_NAME=https://analytics.ondeline.cloud
+      - DOMAIN_NAME=${DOMAIN_NAME}
     depends_on:
       - backend
       - client
@@ -33,7 +33,7 @@ services:
       - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-frog}
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://clickhouse:8123/ping"]
       interval: 3s
       timeout: 5s
       retries: 5
@@ -52,14 +52,15 @@ services:
     restart: unless-stopped
 
   backend:
-    image: ghcr.io/rybbit-io/rybbit-backend:${IMAGE_TAG:-latest}
     container_name: backend
     build:
       context: ./server
       dockerfile: Dockerfile
+    ports:
+      - "${HOST_BACKEND_PORT}"
     environment:
       - NODE_ENV=production
-      - CLICKHOUSE_HOST=http://clickhouse:8123
+      - CLICKHOUSE_URL=http://clickhouse:8123
       - CLICKHOUSE_DB=${CLICKHOUSE_DB:-analytics}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-frog}
       - POSTGRES_HOST=postgres
@@ -86,6 +87,8 @@ services:
       args:
         NEXT_PUBLIC_BACKEND_URL: ${BASE_URL}
         NEXT_PUBLIC_DISABLE_SIGNUP: ${DISABLE_SIGNUP}
+    ports:
+      - "${HOST_CLIENT_PORT}"
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_BACKEND_URL=${BASE_URL}
@@ -97,5 +100,3 @@ services:
 volumes:
   clickhouse-data:
   postgres-data:
-  caddy_data:     # Persistent volume for Caddy's certificates and state
-  caddy_config:   # Persistent volume for Caddy's configuration cache (optional but good practice)
