@@ -1,24 +1,4 @@
 services:
-  clickhouse:
-    image: clickhouse/clickhouse-server:latest
-    ports:
-      - "8123:8123"
-      - "9000:9000"
-    volumes:
-      - clickhouse-data:/var/lib/clickhouse
-      - ./clickhouse_config:/etc/clickhouse-server/config.d
-    environment:
-      - CLICKHOUSE_DB=analytics
-      - CLICKHOUSE_USER=frog
-      - CLICKHOUSE_PASSWORD=frog
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
-      interval: 3s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
-
   postgres:
     image: postgres:17.4
     environment:
@@ -47,8 +27,6 @@ services:
       - BASE_URL=${BASE_URL}
       - DISABLE_SIGNUP=${DISABLE_SIGNUP}
     depends_on:
-      clickhouse:
-        condition: service_healthy
       postgres:
         condition: service_started
     restart: unless-stopped
@@ -72,5 +50,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  clickhouse-data:
   postgres-data:
