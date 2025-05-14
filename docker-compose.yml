@@ -49,7 +49,7 @@ services:
       - POSTGRES_DB=analytics1
       - POSTGRES_USER=frog1
       - POSTGRES_PASSWORD=frog1
-      - BETTER_AUTH_SECRET=de5914cac3066535a3cd54b0d4efac61a25f10a20b71c6e5512084a8665dc44f
+      - BETTER_AUTH_SECRET=insecure-secret
       - BASE_URL=https://analytics.ondeline.cloud
       - DISABLE_SIGNUP=false
     depends_on:
