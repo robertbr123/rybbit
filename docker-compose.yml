@@ -9,9 +9,9 @@ services:
       - clickhouse-data:/var/lib/clickhouse
       - ./clickhouse_config:/etc/clickhouse-server/config.d
     environment:
-      - CLICKHOUSE_DB=${CLICKHOUSE_DB:-analytics}
-      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
-      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-frog}
+      - CLICKHOUSE_DB=analytics1
+      - CLICKHOUSE_USER=frog1
+      - CLICKHOUSE_PASSWORD=frog1
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
       interval: 3s
@@ -24,9 +24,9 @@ services:
     image: postgres:17.4
     container_name: postgres
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-frog}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-frog}
-      - POSTGRES_DB=${POSTGRES_DB:-analytics}
+      - POSTGRES_USER=frog1
+      - POSTGRES_PASSWORD=frog1
+      - POSTGRES_DB=analytics1
     volumes:
       - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -38,20 +38,20 @@ services:
       context: ./server
       dockerfile: Dockerfile
     ports:
-      - "${HOST_BACKEND_PORT}"
+      - "3001:3001"
     environment:
       - NODE_ENV=production
       - CLICKHOUSE_HOST=http://clickhouse:8123
-      - CLICKHOUSE_DB=${CLICKHOUSE_DB:-analytics}
-      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-frog}
+      - CLICKHOUSE_DB=analytics1
+      - CLICKHOUSE_PASSWORD=frog1
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB:-analytics}
-      - POSTGRES_USER=${POSTGRES_USER:-frog}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-frog}
-      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-      - BASE_URL=${BASE_URL}
-      - DISABLE_SIGNUP=${DISABLE_SIGNUP}
+      - POSTGRES_DB=analytics1
+      - POSTGRES_USER=frog1
+      - POSTGRES_PASSWORD=frog1
+      - BETTER_AUTH_SECRET=de5914cac3066535a3cd54b0d4efac61a25f10a20b71c6e5512084a8665dc44f
+      - BASE_URL=https://analytics.ondeline.cloud
+      - DISABLE_SIGNUP=false
     depends_on:
       clickhouse:
         condition: service_healthy
@@ -66,12 +66,12 @@ services:
       context: ./client
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_BACKEND_URL: ${BASE_URL}
+        NEXT_PUBLIC_BACKEND_URL: https://analytics.ondeline.cloud
     ports:
-      - "${HOST_CLIENT_PORT}"
+      - "3002:3002"
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_BACKEND_URL=${BASE_URL}
+      - NEXT_PUBLIC_BACKEND_URL=https://analytics.ondeline.cloud
     depends_on:
       - backend
     restart: unless-stopped
