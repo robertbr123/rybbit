@@ -77,5 +77,3 @@ services:
 volumes:
   clickhouse-data:
   postgres-data:
-  caddy_data:     # Persistent volume for Caddy's certificates and state
-  caddy_config:   # Persistent volume for Caddy's configuration cache (optional but good practice)
