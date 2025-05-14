@@ -1,6 +1,6 @@
 services:
   clickhouse:
-    image: clickhouse/clickhouse-server:25.4.2
+    image: clickhouse/clickhouse-server:latest
     ports:
       - "8124:8124"
       - "9000:9000"
